@@ -13,6 +13,7 @@
             android:inheritShowWhenLocked="true"
             android:noHistory="true"
             android:screenOrientation="sensorPortrait"
+            android:exported="true"
             android:showForAllUsers="true"
             android:showOnLockScreen="true"
             android:showWhenLocked="true"

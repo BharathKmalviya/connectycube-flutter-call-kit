@@ -2,7 +2,7 @@ group 'com.connectycube.flutter.connectycube_flutter_call_kit'
 version '2.7.0'
 
 buildscript {
-    ext.kotlin_version = '1.9.10'
+    ext.kotlin_version = '1.8.20'
     repositories {
         google()
         mavenCentral()

@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
+// ignore_for_file: unrelated_type_equality_checks
 
-import 'package:flutter/services.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,13 +13,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,10 +20,47 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  print("init call");
+                  callInitiat();
+                  print("init call end");
+                },
+                child: Text("init call"))
+          ],
         ),
       ),
     );
   }
+
+  void callInitiat() {
+    checkValue();
+
+    Future.delayed(Duration(seconds: 2), () {
+      print("call initiated after 2 seconds of button click");
+      CallEvent callEvent = CallEvent(
+        sessionId: "sessionId",
+        callType: 1,
+        callerId: 123,
+        callerName: 'John Doe',
+        opponentsIds: {456, 789},
+        callPhoto:
+            "https://images.pexels.com/photos/8159657/pexels-photo-8159657.jpeg?auto=compress&cs=tinysrgb&w=600",
+      );
+      ConnectycubeFlutterCallKit.showCallNotification(callEvent);
+    });
+  }
+
+  void checkValue() async {
+    bool boolValue = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
+    if (boolValue == false) {
+      ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
+    }
+  }
 }
+// https://github.com/flutter/flutter/blob/master/docs/platforms/android/Upgrading-pre-1.12-Android-projects.md
