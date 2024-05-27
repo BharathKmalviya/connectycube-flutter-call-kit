@@ -16,6 +16,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
@@ -25,39 +26,39 @@ class _MyAppState extends State<MyApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton(
-                onPressed: () {
-                  print("init call");
-                  callInitiat();
-                  print("init call end");
-                },
-                child: Text("init call"))
+            Center(
+              child: ElevatedButton(
+                  onPressed: callInitiate, child: Text("init call"))
+            )
           ],
         ),
       ),
     );
   }
 
-  void callInitiat() {
-    checkValue();
+  void callInitiate() {
+    checkFullScreenIntentPermission();
 
-    Future.delayed(Duration(seconds: 2), () {
-      print("call initiated after 2 seconds of button click");
-      CallEvent callEvent = CallEvent(
-        sessionId: "sessionId",
-        callType: 1,
-        callerId: 123,
-        callerName: 'John Doe',
-        opponentsIds: {456, 789},
-        callPhoto:
-            "https://images.pexels.com/photos/8159657/pexels-photo-8159657.jpeg?auto=compress&cs=tinysrgb&w=600",
-      );
-      ConnectycubeFlutterCallKit.showCallNotification(callEvent);
-    });
+    CallEvent callEvent = CallEvent(
+      sessionId: "sessionId",
+      callType: 1,
+      callerId: 123,
+      callerName: 'John Doe',
+      opponentsIds: {456, 789},
+      callPhoto:
+      'https://images.pexels.com/photos/8159657/pexels-photo-8159657.jpeg?auto=compress&cs=tinysrgb&w=600',
+    );
+    ConnectycubeFlutterCallKit.showCallNotification(callEvent);
+
+    // Future.delayed(Duration(seconds: 0), () {
+    //   print("call initiated after 2 seconds of button click");
+    //
+    // },);
   }
 
-  void checkValue() async {
+  void checkFullScreenIntentPermission() async {
     bool boolValue = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
+    print("boolValue: $boolValue");
     if (boolValue == false) {
       ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
     }
