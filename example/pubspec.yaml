@@ -24,6 +24,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
 
+  fluttertoast: any
+  flutter_background_service: any
+  device_info_plus: any
+  flutter_local_notifications: any
+  shared_preferences: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -226,8 +226,13 @@ fun createCallNotification(
         .setCategory(NotificationCompat.CATEGORY_CALL)
         .setContentIntent(pendingIntent)
         .setSound(ringtone)
-        .setPriority(NotificationCompat.PRIORITY_MAX)
         .setTimeoutAfter(60000)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        notificationBuilder.setPriority(NotificationManager.IMPORTANCE_HIGH)
+    } else{
+        notificationBuilder.setPriority(NotificationCompat.PRIORITY_MAX)
+    }
     return notificationBuilder
 }
 
@@ -316,6 +321,7 @@ fun createCallNotificationChannel(notificationManager: NotificationManagerCompat
             CALL_CHANNEL_NAME,
             NotificationManager.IMPORTANCE_HIGH
         )
+        channel.importance = NotificationManager.IMPORTANCE_HIGH
         channel.setSound(
             sound, AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
