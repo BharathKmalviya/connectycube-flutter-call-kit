@@ -2,6 +2,8 @@
 
 # ConnectyCube Flutter Call Kit plugin
 
+this plugin is a fork of the original [connectycube_flutter_call_kit](https://pub.dev/packages/connectycube_flutter_call_kit) plugin
+
 A Flutter plugin for displaying call screen when the app is in the background or terminated.
 It provides a complex solution for implementation the background calls feature in your app including 
 getting token and displaying the Incoming call screen.
