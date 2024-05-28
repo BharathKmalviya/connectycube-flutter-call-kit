@@ -1,5 +1,7 @@
 package com.connectycube.flutter.connectycube_flutter_call_kit
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -15,6 +17,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
@@ -69,10 +72,14 @@ fun showCallNotification(
 
     Log.d("NotificationsManager", "ringtone: $ringtone")
 
-    val isVideoCall = callType == 1
-
     val callTypeTitle =
-        String.format(CALL_TYPE_PLACEHOLDER, if (isVideoCall) "Video" else "Audio")
+        String.format(
+            CALL_TYPE_PLACEHOLDER, when(callType) {
+                CALL_TYPES.VIDEO_CALL -> { "Video" }
+                CALL_TYPES.CHAT_CALL -> { "Chat" }
+                else -> { "Audio" }
+            }
+        )
 
     val callData = Bundle()
     callData.putString(EXTRA_CALL_ID, callId)
@@ -92,7 +99,7 @@ fun showCallNotification(
             callTypeTitle,
             pendingIntent,
             ringtone,
-            isVideoCall,
+            callType,
             callData
         )
 
@@ -118,7 +125,7 @@ fun showCallNotification(
     )
 
     // Set small icon for notification
-    setNotificationSmallIcon(context, builder, isVideoCall)
+    setNotificationSmallIcon(context, builder, callType)
 
     // Set notification color accent
     setNotificationColor(context, builder)
@@ -140,6 +147,7 @@ fun showCallNotification(
     }
 }
 
+@SuppressLint("MissingPermission")
 fun postNotification(
     notificationId: Int,
     notificationManager: NotificationManagerCompat,
@@ -200,7 +208,7 @@ fun createCallNotification(
     callName: String?,
     pendingIntent: PendingIntent,
     ringtone: Uri,
-    isVideoCall: Boolean,
+    callType: Int,
     callData: Bundle
 ): NotificationCompat.Builder {
     val person = Person.Builder()
@@ -208,12 +216,9 @@ fun createCallNotification(
         .setImportant(true)
         .build()
 
-    val style = NotificationCompat.CallStyle.forIncomingCall(
-        person,
-        getRejectCallIntent(context, callData, title.hashCode()),
-        getAcceptCallIntent(context, callData, title.hashCode())
-    )
-    style.setIsVideo(isVideoCall)
+    val style = NotificationCompat.CallStyle.forIncomingCall(person, getRejectCallIntent(context, callData, title.hashCode()), getAcceptCallIntent(context, callData, title.hashCode()))
+
+    style.setIsVideo(callType == CALL_TYPES.VIDEO_CALL)
 
     val notificationBuilder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
     notificationBuilder
@@ -230,7 +235,7 @@ fun createCallNotification(
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         notificationBuilder.setPriority(NotificationManager.IMPORTANCE_HIGH)
-    } else{
+    } else {
         notificationBuilder.setPriority(NotificationCompat.PRIORITY_MAX)
     }
     return notificationBuilder
@@ -247,7 +252,11 @@ fun getAcceptCallIntent(
         Intent(context, EventReceiver::class.java)
             .setAction(ACTION_CALL_ACCEPT)
             .putExtras(callData),
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
     )
 }
 
@@ -262,7 +271,11 @@ fun getRejectCallIntent(
         Intent(context, EventReceiver::class.java)
             .setAction(ACTION_CALL_REJECT)
             .putExtras(callData),
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
     )
 }
 
@@ -337,7 +350,7 @@ fun createCallNotificationChannel(notificationManager: NotificationManagerCompat
 fun setNotificationSmallIcon(
     context: Context,
     notificationBuilder: NotificationCompat.Builder,
-    isVideoCall: Boolean
+    callType: Int
 ) {
     val appMetadata = context.packageManager.getApplicationInfo(
         context.packageName,
@@ -345,12 +358,13 @@ fun setNotificationSmallIcon(
     ).metaData
 
     var iconId =
-        if (isVideoCall) appMetadata.getInt("com.connectycube.flutter.connectycube_flutter_call_kit.video_call_notification_icon") else appMetadata.getInt(
-            "com.connectycube.flutter.connectycube_flutter_call_kit.audio_call_notification_icon"
-        )
+        if (callType == CALL_TYPES.VIDEO_CALL) {
+            appMetadata.getInt("com.connectycube.flutter.connectycube_flutter_call_kit.video_call_notification_icon")
+        } else {
+            appMetadata.getInt("com.connectycube.flutter.connectycube_flutter_call_kit.audio_call_notification_icon")
+        }
     if (iconId == 0) {
-        iconId =
-            appMetadata.getInt("com.connectycube.flutter.connectycube_flutter_call_kit.app_notification_icon")
+        iconId = appMetadata.getInt("com.connectycube.flutter.connectycube_flutter_call_kit.app_notification_icon")
     }
 
     if (iconId == 0) {

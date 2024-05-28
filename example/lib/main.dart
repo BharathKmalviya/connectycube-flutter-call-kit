@@ -89,13 +89,9 @@ void initCallPushListeners() {
 
 void initCallPush() {
   var canUseFullScreenIntent = ConnectycubeFlutterCallKit.getLastCallId();
-  ConnectycubeFlutterCallKit.clearCallData(
-      sessionId: canUseFullScreenIntent.toString());
-  ConnectycubeFlutterCallKit.reportCallEnded(
-      sessionId: canUseFullScreenIntent.toString());
-  ConnectycubeFlutterCallKit.setCallState(
-      sessionId: canUseFullScreenIntent.toString(),
-      callState: CallState.REJECTED);
+  ConnectycubeFlutterCallKit.clearCallData(sessionId: canUseFullScreenIntent.toString());
+  ConnectycubeFlutterCallKit.reportCallEnded(sessionId: canUseFullScreenIntent.toString());
+  ConnectycubeFlutterCallKit.setCallState(sessionId: canUseFullScreenIntent.toString(), callState: CallState.REJECTED);
   CallEvent callEvent = CallEvent(
       sessionId: DateTime.now().microsecondsSinceEpoch.toString(),
       callType: 0,
@@ -307,11 +303,7 @@ void onStart(ServiceInstance service) async {
 
   ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: true);
   ConnectycubeFlutterCallKit.onCallMuted = onCallMuted;
-  ConnectycubeFlutterCallKit.instance.init(
-    onCallAccepted: _onCallAccepted,
-    onCallRejected: _onCallRejected,
-    onCallIncoming: _onCallIncoming,
-  );
+  ConnectycubeFlutterCallKit.instance.init(onCallAccepted: _onCallAccepted, onCallRejected: _onCallRejected, onCallIncoming: _onCallIncoming,);
 
   // bring to foreground
   Timer.periodic(const Duration(seconds: 5), (timer) async {
