@@ -45,7 +45,11 @@ class _MyAppState extends State<MyApp> {
                 Center(
                     child: ElevatedButton(
                         onPressed: startService,
-                        child: Text("start service"))),
+                        child: Text("Start Service"))),
+                SizedBox(width: 10,),
+                Center(
+                    child: ElevatedButton(
+                        onPressed: stopService, child: Text("Stop Service"))),
                 SizedBox(width: 10,),
                 Center(
                     child: ElevatedButton(
@@ -61,7 +65,7 @@ class _MyAppState extends State<MyApp> {
   void callInitiate() {
     checkFullScreenIntentPermission();
     showToast("Call initiated");
-    Future.delayed(Duration(seconds: 5), () {
+    Future.delayed(Duration(seconds: 3), () {
       initCallPush();
     });
   }
@@ -71,8 +75,8 @@ void startService() async {
   await initializeService();
 }
 
-void stopService() async {
-  await initializeService();
+void stopService() {
+  service.invoke("stopService");
 }
 
 void initCallPushListeners() {
@@ -88,12 +92,13 @@ void initCallPushListeners() {
 // https://github.com/flutter/flutter/blob/master/docs/platforms/android/Upgrading-pre-1.12-Android-projects.md
 
 void initCallPush() {
-  var canUseFullScreenIntent = ConnectycubeFlutterCallKit.getLastCallId();
-  ConnectycubeFlutterCallKit.clearCallData(sessionId: canUseFullScreenIntent.toString());
-  ConnectycubeFlutterCallKit.reportCallEnded(sessionId: canUseFullScreenIntent.toString());
-  ConnectycubeFlutterCallKit.setCallState(sessionId: canUseFullScreenIntent.toString(), callState: CallState.REJECTED);
+ConnectycubeFlutterCallKit.getLastCallId().then((value) {
+      ConnectycubeFlutterCallKit.reportCallEnded(sessionId: value);
+    });
+
+  var sessionId = DateTime.now().microsecondsSinceEpoch.toString();
   CallEvent callEvent = CallEvent(
-      sessionId: DateTime.now().microsecondsSinceEpoch.toString(),
+      sessionId: sessionId,
       callType: 0,
       callerId: randomIds(),
       callerName: randomString(5),
@@ -115,7 +120,6 @@ Future<void> _onCallRejected(CallEvent callEvent) async {
   print("Call rejected");
   showToast("Call rejected");
   ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
-  ConnectycubeFlutterCallKit.clearCallData(sessionId: callEvent.sessionId);
 }
 
 Future<void> _onCallIncoming(CallEvent callEvent) async {
@@ -284,7 +288,6 @@ void onStart(ServiceInstance service) async {
     print("Call rejected");
     showToast("Call rejected");
     ConnectycubeFlutterCallKit.reportCallEnded(sessionId: callEvent.sessionId);
-    ConnectycubeFlutterCallKit.clearCallData(sessionId: callEvent.sessionId);
   }
 
   Future<void> _onCallIncoming(CallEvent callEvent) async {
