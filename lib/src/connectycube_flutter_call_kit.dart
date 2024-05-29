@@ -187,8 +187,7 @@ class ConnectycubeFlutterCallKit {
   static Future<void> reportCallAccepted({required String? sessionId}) async {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
-    return _methodChannel
-        .invokeMethod("reportCallAccepted", {'session_id': sessionId});
+    return _methodChannel.invokeMethod("reportCallAccepted", {'session_id': sessionId});
   }
 
   /// Report that the current active call has been ended by your application
