@@ -409,7 +409,6 @@ fun notifyAboutIncomingCall(
 
 fun saveCallState(applicationContext: Context?, callId: String, callState: String) {
     if (applicationContext == null) return
-
     putString(applicationContext, callId + "_state", callState)
 }
 

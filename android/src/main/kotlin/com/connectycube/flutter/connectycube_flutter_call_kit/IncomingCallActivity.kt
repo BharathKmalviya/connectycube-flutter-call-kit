@@ -12,11 +12,11 @@ import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
-import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Nullable
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.getPhotoPlaceholderResId
@@ -40,6 +40,14 @@ fun createStartIncomingScreenIntent(
     return intent
 }
 
+annotation class CALL_TYPES{
+    companion object {
+        val AUDIO_CALL = 0
+        val VIDEO_CALL = 1
+        val CHAT_CALL = 2
+    }
+}
+
 class IncomingCallActivity : Activity() {
     private lateinit var callStateReceiver: BroadcastReceiver
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -52,6 +60,8 @@ class IncomingCallActivity : Activity() {
     private var callPhoto: String? = null
     private var callUserInfo: String? = null
 
+    var isLeftSwiped = false
+    var isRightSwiped = false
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,21 +176,22 @@ class IncomingCallActivity : Activity() {
         val callSubTitleTxt: TextView =
             findViewById(resources.getIdentifier("call_type_txt", "id", packageName))
         callSubTitleTxt.text =
-            String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
-
-        val callAcceptButton: ImageView =
-            findViewById(resources.getIdentifier("start_call_btn", "id", packageName))
-        val acceptButtonIconName = if (callType == 1) "ic_video_call_start" else "ic_call_start"
-        callAcceptButton.setImageResource(
-            resources.getIdentifier(
-                acceptButtonIconName,
-                "drawable",
-                packageName
+            String.format(CALL_TYPE_PLACEHOLDER, when (callType) {
+                CALL_TYPES.VIDEO_CALL -> "Video"
+                CALL_TYPES.CHAT_CALL -> "Chat"
+                else -> "Audio"
+            }
             )
-        )
 
-        val avatarImg: ShapeableImageView =
-            findViewById(resources.getIdentifier("avatar_img", "id", packageName))
+        val callAcceptButton: ImageView = findViewById(resources.getIdentifier("start_call_btn", "id", packageName))
+        val acceptButtonIconName = when (callType) {
+            CALL_TYPES.VIDEO_CALL -> "ic_video_call_start"
+            CALL_TYPES.CHAT_CALL -> "ic_chat"
+            else -> "ic_call_start"
+        }
+        callAcceptButton.setImageResource(resources.getIdentifier(acceptButtonIconName, "drawable", packageName))
+
+        val avatarImg: ShapeableImageView = findViewById(resources.getIdentifier("avatar_img", "id", packageName))
 
         val defaultPhotoResId = getPhotoPlaceholderResId(applicationContext)
 
@@ -194,17 +205,54 @@ class IncomingCallActivity : Activity() {
             avatarImg.setImageResource(defaultPhotoResId)
         }
 
-        val acceptButtonAnimation: RippleBackground =
-            findViewById(resources.getIdentifier("accept_button_animation", "id", packageName))
+        val acceptButtonAnimation: RippleBackground = findViewById(resources.getIdentifier("accept_button_animation", "id", packageName))
         acceptButtonAnimation.startRippleAnimation()
 
-        val rejectButtonAnimation: RippleBackground =
-            findViewById(resources.getIdentifier("reject_button_animation", "id", packageName))
+        val rejectButtonAnimation: RippleBackground = findViewById(resources.getIdentifier("reject_button_animation", "id", packageName))
         rejectButtonAnimation.startRippleAnimation()
+
+        val mCallEndMotionLayout = findViewById<MotionLayout>(resources.getIdentifier("leftMotionLayout", "id", packageName))
+        val mCallStartMotionLayout = findViewById<MotionLayout>(resources.getIdentifier("rightMotionLayout", "id", packageName))
+
+        mCallEndMotionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
+            override fun onTransitionStarted(p0: MotionLayout?, p1: Int, p2: Int) {
+            }
+
+            override fun onTransitionChange(p0: MotionLayout?, p1: Int, p2: Int, p3: Float) {
+                if (p3 >= 0.5f && !isLeftSwiped) {
+                    isLeftSwiped = true
+                    onEndCall()
+                }
+            }
+
+            override fun onTransitionCompleted(p0: MotionLayout?, p1: Int) {
+            }
+
+            override fun onTransitionTrigger(p0: MotionLayout?, p1: Int, p2: Boolean, p3: Float) {
+            }
+        })
+
+        mCallStartMotionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
+            override fun onTransitionStarted(p0: MotionLayout?, p1: Int, p2: Int) {
+            }
+
+            override fun onTransitionChange(p0: MotionLayout?, p1: Int, p2: Int, p3: Float) {
+                if (p3 >= 0.5f && !isRightSwiped) {
+                    isRightSwiped = true
+                    onStartCall()
+                }
+            }
+
+            override fun onTransitionCompleted(p0: MotionLayout?, p1: Int) {
+            }
+
+            override fun onTransitionTrigger(p0: MotionLayout?, p1: Int, p2: Boolean, p3: Float) {
+            }
+        })
     }
 
     // calls from layout file
-    fun onEndCall(view: View?) {
+    fun onEndCall() {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
         bundle.putInt(EXTRA_CALL_TYPE, callType)
@@ -221,7 +269,7 @@ class IncomingCallActivity : Activity() {
     }
 
     // calls from layout file
-    fun onStartCall(view: View?) {
+    fun onStartCall() {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
         bundle.putInt(EXTRA_CALL_TYPE, callType)

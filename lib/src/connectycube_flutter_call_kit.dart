@@ -15,14 +15,11 @@ typedef CallEventHandler = Future<dynamic> Function(CallEvent event);
 /// Plugin to manage call events and notifications
 /// {@endtemplate}
 class ConnectycubeFlutterCallKit {
-  static const MethodChannel _methodChannel =
-      const MethodChannel('connectycube_flutter_call_kit.methodChannel');
-  static const EventChannel _eventChannel =
-      const EventChannel('connectycube_flutter_call_kit.callEventChannel');
+  static const MethodChannel _methodChannel = const MethodChannel('connectycube_flutter_call_kit.methodChannel');
+  static const EventChannel _eventChannel = const EventChannel('connectycube_flutter_call_kit.callEventChannel');
 
   /// {@macro connectycube_flutter_call_kit}
   factory ConnectycubeFlutterCallKit() => _getInstance();
-
   const ConnectycubeFlutterCallKit._internal();
 
   static ConnectycubeFlutterCallKit get instance => _getInstance();
@@ -37,21 +34,17 @@ class ConnectycubeFlutterCallKit {
   }
 
   static int _bgHandler = -1;
-
   static Function(String newToken)? onTokenRefreshed;
 
   /// iOS only callbacks
   static Function(bool isMuted, String sessionId)? onCallMuted;
 
   /// end iOS only callbacks
-
   static CallEventHandler? _onCallRejectedWhenTerminated;
   static CallEventHandler? _onCallAcceptedWhenTerminated;
   static CallEventHandler? _onCallIncomingWhenTerminated;
-
   static CallEventHandler? _onCallAccepted;
   static CallEventHandler? _onCallRejected;
-
   static CallEventHandler? _onCallIncoming;
 
   /// Initialize the plugin and provided user callbacks.
@@ -71,11 +64,7 @@ class ConnectycubeFlutterCallKit {
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
 
-    updateConfig(
-        ringtone: ringtone,
-        icon: icon,
-        notificationIcon: notificationIcon,
-        color: color);
+    updateConfig(ringtone: ringtone, icon: icon, notificationIcon: notificationIcon, color: color);
 
     initEventsHandler();
   }
@@ -198,8 +187,7 @@ class ConnectycubeFlutterCallKit {
   static Future<void> reportCallAccepted({required String? sessionId}) async {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
-    return _methodChannel
-        .invokeMethod("reportCallAccepted", {'session_id': sessionId});
+    return _methodChannel.invokeMethod("reportCallAccepted", {'session_id': sessionId});
   }
 
   /// Report that the current active call has been ended by your application
